@@ -1,4 +1,4 @@
-use clock::PlockClock;
+use plock::PlockClock;
 
 fn main() {
     let mut clock = PlockClock::default();

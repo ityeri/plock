@@ -1,4 +1,4 @@
-use clock::PlockClock;
+use plock::PlockClock;
 
 #[tokio::main]
 async fn main() {
