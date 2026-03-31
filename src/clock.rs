@@ -8,12 +8,12 @@ pub fn current_time_seconds() -> f64 {
 }
 
 #[derive(Debug)]
-pub struct Clock {
+pub struct PlockClock {
     last_tick_time: f64,
     pub last_dt: f64,
 }
 
-impl Clock {
+impl PlockClock {
     pub fn new(initial_dt: f64) -> Self {
         Self {
             last_tick_time: 0f64,
