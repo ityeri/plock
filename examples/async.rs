@@ -7,5 +7,6 @@ async fn main() {
     loop {
         println!("This message displays 2 times for a second!");
         clock = clock.atick(2f64).await;
+        println!("Time delta is: {}", clock.last_dt);
     }
 }
