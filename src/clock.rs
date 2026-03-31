@@ -28,6 +28,13 @@ impl PlockClock {
         }
     }
 
+    pub fn initialized(self) -> Self {
+        return Self {
+            last_tick_time: current_time_seconds(),
+            last_dt: self.last_dt,
+        };
+    }
+
     /// Waiting enough time according to passed tps value
     /// if a tps is negative value, doesn't wait, only update
     pub fn tick(self, tps: f64) -> Self {
