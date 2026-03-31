@@ -22,7 +22,7 @@ impl Clock {
     }
 
     /// Waiting enough time according to passed tps value
-    /// if tps is negative value, doesn't wait, only update
+    /// if a tps is negative value, doesn't wait, only update
     pub fn tick(self, tps: f64) -> Self {
         let mut current_time = current_time_seconds();
 
@@ -38,6 +38,8 @@ impl Clock {
         }
     }
 
+    /// Waiting enough time asynchronously according to passed tps value
+    /// if a tps is negative value, doesn't wait, only update
     pub async fn tick_async(self, tps: f64) -> Self {
         let mut current_time = current_time_seconds();
         let target_interval = 1.0 / tps;
