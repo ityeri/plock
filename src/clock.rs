@@ -1,3 +1,5 @@
+use tokio::time::{Duration, sleep};
+
 use chrono::Utc;
 
 pub fn current_time_seconds() -> f64 {
@@ -19,11 +21,35 @@ impl Clock {
         }
     }
 
+    /// Waiting enough time according to passed tps value
+    /// if tps is negative value, doesn't wait, only update
     pub fn tick(self, tps: f64) -> Self {
         let mut current_time = current_time_seconds();
 
-        while current_time - self.last_tick_time < 1.0 / tps {
-            current_time = current_time_seconds();
+        if tps.is_sign_positive() {
+            while current_time - self.last_tick_time < 1.0 / tps {
+                current_time = current_time_seconds();
+            }
+        }
+
+        Self {
+            last_dt: current_time - self.last_tick_time,
+            last_tick_time: current_time,
+        }
+    }
+
+    pub async fn tick_async(self, tps: f64) -> Self {
+        let mut current_time = current_time_seconds();
+        let target_interval = 1.0 / tps;
+
+        if tps.is_sign_positive() {
+            let elapsed = current_time - self.last_tick_time;
+            let remaining = target_interval - elapsed;
+
+            if remaining > 0.0 {
+                sleep(Duration::from_secs_f64(remaining)).await;
+                current_time = current_time_seconds();
+            }
         }
 
         Self {
