@@ -1,4 +1,6 @@
-use tokio::time::{Duration, sleep};
+use std::thread::sleep;
+use std::time::Duration;
+use tokio::time as atime;
 
 use chrono::Utc;
 
@@ -16,54 +18,70 @@ pub struct PlockClock {
 impl PlockClock {
     pub fn default() -> Self {
         Self {
-            last_tick_time: 0f64,
-            last_dt: 0f64,
+            last_tick_time: 0.0,
+            last_dt: 0.0,
         }
     }
 
     pub fn new(initial_dt: f64) -> Self {
         Self {
-            last_tick_time: 0f64,
+            last_tick_time: 0.0,
             last_dt: initial_dt,
         }
     }
 
-    /// Waiting enough time according to passed tps value
-    /// if a tps is negative value, doesn't wait, only update
-    pub fn tick(self, tps: f64) -> Self {
-        let mut current_time = current_time_seconds();
-
-        if tps.is_sign_positive() {
-            while current_time - self.last_tick_time < 1.0 / tps {
-                current_time = current_time_seconds();
-            }
-        }
-
-        Self {
-            last_dt: current_time - self.last_tick_time,
-            last_tick_time: current_time,
-        }
+    /// Get time initialized clock.
+    /// It usable when loop just before
+    pub fn initialized(self) -> Self {
+        return Self {
+            last_tick_time: current_time_seconds(),
+            last_dt: self.last_dt,
+        };
     }
 
-    /// Waiting enough time asynchronously according to passed tps value
+    /// Waiting enough time according to passed tps value.
     /// if a tps is negative value, doesn't wait, only update
-    pub async fn atick(self, tps: f64) -> Self {
-        let mut current_time = current_time_seconds();
-        let target_interval = 1.0 / tps;
+    pub fn tick(self, tps: f64) -> Self {
+        let current_time = current_time_seconds();
 
         if tps.is_sign_positive() {
+            let target_interval = 1.0 / tps;
             let elapsed = current_time - self.last_tick_time;
             let remaining = target_interval - elapsed;
 
-            if remaining > 0.0 {
-                sleep(Duration::from_secs_f64(remaining)).await;
-                current_time = current_time_seconds();
+            if 0.0 < remaining {
+                sleep(Duration::from_secs_f64(remaining));
             }
         }
 
+        let after_tick_time = current_time_seconds();
+
         Self {
-            last_dt: current_time - self.last_tick_time,
-            last_tick_time: current_time,
+            last_tick_time: after_tick_time,
+            last_dt: after_tick_time - self.last_tick_time,
+        }
+    }
+
+    /// Waiting enough time asynchronously according to passed tps value (with runtime tokio).
+    /// if a tps is negative value, doesn't wait, only update
+    pub async fn atick(self, tps: f64) -> Self {
+        let current_time = current_time_seconds();
+
+        if tps.is_sign_positive() {
+            let target_interval = 1.0 / tps;
+            let elapsed = current_time - self.last_tick_time;
+            let remaining = target_interval - elapsed;
+
+            if 0.0 < remaining {
+                atime::sleep(atime::Duration::from_secs_f64(remaining)).await;
+            }
+        }
+
+        let after_tick_time = current_time_seconds();
+
+        Self {
+            last_tick_time: after_tick_time,
+            last_dt: after_tick_time - self.last_tick_time,
         }
     }
 }
