@@ -14,6 +14,13 @@ pub struct PlockClock {
 }
 
 impl PlockClock {
+    pub fn default() -> Self {
+        Self {
+            last_tick_time: 0f64,
+            last_dt: 0f64,
+        }
+    }
+
     pub fn new(initial_dt: f64) -> Self {
         Self {
             last_tick_time: 0f64,
@@ -40,7 +47,7 @@ impl PlockClock {
 
     /// Waiting enough time asynchronously according to passed tps value
     /// if a tps is negative value, doesn't wait, only update
-    pub async fn tick_async(self, tps: f64) -> Self {
+    pub async fn atick(self, tps: f64) -> Self {
         let mut current_time = current_time_seconds();
         let target_interval = 1.0 / tps;
 
